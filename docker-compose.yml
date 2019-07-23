@@ -9,3 +9,4 @@ services:
       - 8443:443
     volumes:
       - ./certs:/opt/certs
+      - ./nginx.conf:/opt/nginx/nginx.conf
