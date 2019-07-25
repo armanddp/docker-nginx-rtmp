@@ -1,5 +1,6 @@
 ARG NGINX_VERSION=1.16.0
 ARG NGINX_RTMP_VERSION=1.2.1
+ARG NGINX_VOD_VERSION=1.24
 ARG FFMPEG_VERSION=4.1.3
 
 
@@ -8,6 +9,7 @@ ARG FFMPEG_VERSION=4.1.3
 FROM alpine:3.8 as build-nginx
 ARG NGINX_VERSION
 ARG NGINX_RTMP_VERSION
+ARG NGINX_VOD_VERSION
 
 # Build dependencies.
 RUN apk add --update \
@@ -39,11 +41,17 @@ RUN cd /tmp && \
   wget https://github.com/arut/nginx-rtmp-module/archive/v${NGINX_RTMP_VERSION}.tar.gz && \
   tar zxf v${NGINX_RTMP_VERSION}.tar.gz && rm v${NGINX_RTMP_VERSION}.tar.gz
 
+  # Get nginx-vod module.
+RUN cd /tmp && \
+  wget https://github.com/kaltura/nginx-vod-module/archive/${NGINX_VOD_VERSION}.tar.gz && \
+  tar zxf ${NGINX_VOD_VERSION}.tar.gz && rm ${NGINX_VOD_VERSION}.tar.gz
+
 # Compile nginx with nginx-rtmp module.
 RUN cd /tmp/nginx-${NGINX_VERSION} && \
   ./configure \
   --prefix=/opt/nginx \
   --add-module=/tmp/nginx-rtmp-module-${NGINX_RTMP_VERSION} \
+  --add-module=/tmp/nginx-vod-module-${NGINX_VOD_VERSION} \
   --conf-path=/opt/nginx/nginx.conf \
   --with-threads \
   --with-file-aio \
@@ -149,7 +157,7 @@ COPY --from=build-ffmpeg /usr/lib/libfdk-aac.so.2 /usr/lib/libfdk-aac.so.2
 
 # Add NGINX config and static files.
 ADD nginx.conf /opt/nginx/nginx.conf
-RUN mkdir -p /opt/data && mkdir /www
+RUN mkdir -p /opt/data/rec/previews && mkdir /www && chown -R nobody:root /opt/data/rec
 ADD static /www/static
 
 EXPOSE 1935
