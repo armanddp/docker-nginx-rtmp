@@ -157,7 +157,7 @@ COPY --from=build-ffmpeg /usr/lib/libfdk-aac.so.2 /usr/lib/libfdk-aac.so.2
 
 # Add NGINX config and static files.
 ADD nginx.conf /opt/nginx/nginx.conf
-RUN mkdir -p /opt/data/vod && mkdir /www && chown nobody:root /opt/data/vod
+RUN mkdir -p /opt/data/rec/previews && mkdir /www && chown -R nobody:root /opt/data/rec
 ADD static /www/static
 
 EXPOSE 1935
